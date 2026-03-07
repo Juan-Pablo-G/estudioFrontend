@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = 'http://localhost:4000/api/posts'
+const API_URL = 'https://estudiobackend.onrender.com/api/posts'
 
 function App() {
   const [posts, setPosts] = useState([])
