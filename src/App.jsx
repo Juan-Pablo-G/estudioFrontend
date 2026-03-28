@@ -10,17 +10,21 @@ function App() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [posts, setPosts] = useState([])
+  const [publicPosts, setPublicPosts] = useState([])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState(null)
+  const [publishPublic, setPublishPublic] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [publicError, setPublicError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
 
   const api = useMemo(() => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
     return {
       postsUrl: `${API_BASE}/api/posts`,
+      publicPostsUrl: `${API_BASE}/api/posts/public`,
       authUrl: `${API_BASE}/api/auth`,
       headers,
     }
@@ -48,6 +52,27 @@ function App() {
   useEffect(() => {
     fetchPosts()
   }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchPublicPosts = async () => {
+    try {
+      setPublicError('')
+      const res = await fetch(api.publicPostsUrl)
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.message || 'No se pudo cargar el feed público')
+      }
+      const data = await res.json()
+      setPublicPosts(data)
+    } catch (err) {
+      console.error(err)
+      setPublicError(err.message || 'No se pudo cargar el feed público')
+    }
+  }
+
+  useEffect(() => {
+    fetchPublicPosts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api.publicPostsUrl])
 
   const handleDelete = async (id) => {
     const confirmar = window.confirm(
@@ -93,6 +118,7 @@ function App() {
     formData.append('title', title)
     formData.append('description', description)
     formData.append('image', imageFile)
+    formData.append('isPublic', publishPublic ? 'true' : 'false')
 
     try {
       setIsSubmitting(true)
@@ -110,9 +136,11 @@ function App() {
 
       await res.json()
       await fetchPosts()
+      await fetchPublicPosts()
       setTitle('')
       setDescription('')
       setImageFile(null)
+      setPublishPublic(false)
       e.target.reset()
     } catch (err) {
       console.error(err)
@@ -152,6 +180,7 @@ function App() {
     setTitle('')
     setDescription('')
     setImageFile(null)
+    setPublishPublic(false)
     setError('')
   }
 
@@ -251,6 +280,22 @@ function App() {
               />
             </div>
 
+            <div
+              className="form-group"
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <input
+                id="isPublic"
+                name="isPublic"
+                type="checkbox"
+                checked={publishPublic}
+                onChange={(e) => setPublishPublic(e.target.checked)}
+              />
+              <label htmlFor="isPublic" style={{ margin: 0 }}>
+                Publicar para el público
+              </label>
+            </div>
+
             {error && <p className="error-text">{error}</p>}
 
             <button type="submit" disabled={isSubmitting}>
@@ -259,6 +304,37 @@ function App() {
           </form>
         </section>
         )}
+
+        <section className="gallery-section">
+          <h2>Feed público</h2>
+          {publicError ? (
+            <p className="error-text">{publicError}</p>
+          ) : publicPosts.length === 0 ? (
+            <p className="empty-text">Todavía no hay publicaciones públicas.</p>
+          ) : (
+            <div className="masonry">
+              {publicPosts.map((post) => (
+                <article
+                  key={`${post._id || 'noid'}-${post.imageUrl || 'noimg'}`}
+                  className="masonry-item"
+                >
+                  <div className="card">
+                    <img
+                      src={`${API_BASE}${post.imageUrl}`}
+                      alt={post.title}
+                      loading="lazy"
+                    />
+                    <div className="card-body">
+                      <h3>{post.title}</h3>
+                      {post.description && <p>{post.description}</p>}
+                      <small style={{ display: 'block', opacity: 0.8 }}>Público</small>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="gallery-section">
           <h2>Mis publicaciones</h2>
@@ -293,6 +369,9 @@ function App() {
                     <div className="card-body">
                       <h3>{post.title}</h3>
                       {post.description && <p>{post.description}</p>}
+                      <small style={{ display: 'block', opacity: 0.8 }}>
+                        {post.isPublic ? 'Público' : 'Privado'}
+                      </small>
                     </div>
                   </div>
                 </article>
