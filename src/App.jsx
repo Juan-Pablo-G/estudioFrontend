@@ -19,6 +19,8 @@ function App() {
   const [error, setError] = useState('')
   const [publicError, setPublicError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
+  const [editingPostId, setEditingPostId] = useState(null)
+  const [editingImageUrl, setEditingImageUrl] = useState('')
 
   const api = useMemo(() => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
@@ -29,6 +31,9 @@ function App() {
       headers,
     }
   }, [token])
+
+  const getImageSrc = (imageUrl) =>
+    imageUrl?.startsWith('http') ? imageUrl : `${API_BASE}${imageUrl}`
 
   const fetchPosts = async () => {
     try {
@@ -93,11 +98,83 @@ function App() {
       }
 
       setPosts((prev) => prev.filter((post) => post._id !== id))
+      if (editingPostId === id) {
+        handleCancelEdit()
+      }
     } catch (err) {
       console.error(err)
       setError(err.message || 'Error al eliminar la publicación')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  const handleStartEditing = (post) => {
+    setEditingPostId(post._id)
+    setTitle(post.title)
+    setDescription(post.description || '')
+    setPublishPublic(post.isPublic)
+    setImageFile(null)
+    setEditingImageUrl(post.imageUrl)
+    setError('')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null)
+    setEditingImageUrl('')
+    setTitle('')
+    setDescription('')
+    setImageFile(null)
+    setPublishPublic(false)
+    setError('')
+  }
+
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    if (!editingPostId) {
+      return
+    }
+    if (!title) {
+      setError('El título es obligatorio')
+      return
+    }
+    if (!token) {
+      setError('Debes iniciar sesión para editar')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('title', title)
+    formData.append('description', description)
+    formData.append('isPublic', publishPublic ? 'true' : 'false')
+    if (imageFile) {
+      formData.append('image', imageFile)
+    }
+
+    try {
+      setIsSubmitting(true)
+      const res = await fetch(`${api.postsUrl}/${editingPostId}`, {
+        method: 'PATCH',
+        body: formData,
+        headers: api.headers,
+      })
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.message || 'Error al actualizar la publicación')
+      }
+
+      const updatedPost = await res.json()
+      setPosts((prev) => prev.map((post) => (post._id === updatedPost._id ? updatedPost : post)))
+      await fetchPublicPosts()
+      handleCancelEdit()
+    } catch (err) {
+      console.error(err)
+      setError(err.message || 'Error al actualizar la publicación')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -243,8 +320,8 @@ function App() {
           </section>
         ) : (
         <section className="form-section">
-          <h2>Nueva publicación</h2>
-          <form onSubmit={handleSubmit} className="post-form">
+          <h2>{editingPostId ? 'Editar publicación' : 'Nueva publicación'}</h2>
+          <form onSubmit={editingPostId ? handleUpdate : handleSubmit} className="post-form">
             <div className="form-group">
               <label htmlFor="title">Título *</label>
               <input
@@ -270,7 +347,9 @@ function App() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="image">Imagen *</label>
+              <label htmlFor="image">
+                Imagen {editingPostId ? '(opcional, selecciona un archivo solo si deseas cambiarla)' : '*'}
+              </label>
               <input
                 id="image"
                 name="image"
@@ -278,6 +357,11 @@ function App() {
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files[0] || null)}
               />
+              {editingPostId && editingImageUrl && !imageFile ? (
+                <p className="info-text">
+                  Imagen actual conservada. Selecciona un nuevo archivo solo si quieres reemplazarla.
+                </p>
+              ) : null}
             </div>
 
             <div
@@ -298,9 +382,16 @@ function App() {
 
             {error && <p className="error-text">{error}</p>}
 
-            <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Subiendo...' : 'Publicar'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (editingPostId ? 'Actualizando...' : 'Subiendo...') : editingPostId ? 'Actualizar' : 'Publicar'}
+              </button>
+              {editingPostId ? (
+                <button type="button" onClick={handleCancelEdit} className="secondary-button">
+                  Cancelar edición
+                </button>
+              ) : null}
+            </div>
           </form>
         </section>
         )}
@@ -320,7 +411,7 @@ function App() {
                 >
                   <div className="card">
                     <img
-                      src={`${API_BASE}${post.imageUrl}`}
+                      src={getImageSrc(post.imageUrl)}
                       alt={post.title}
                       loading="lazy"
                     />
@@ -354,6 +445,14 @@ function App() {
                   <div className="card">
                     <button
                       type="button"
+                      className="edit-button"
+                      onClick={() => handleStartEditing(post)}
+                      aria-label="Editar publicación"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
                       className="delete-button"
                       onClick={() => handleDelete(post._id)}
                       disabled={deletingId === post._id}
@@ -362,7 +461,7 @@ function App() {
                       {deletingId === post._id ? '...' : '×'}
                     </button>
                     <img
-                      src={`${API_BASE}${post.imageUrl}`}
+                      src={getImageSrc(post.imageUrl)}
                       alt={post.title}
                       loading="lazy"
                     />

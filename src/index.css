@@ -264,3 +264,45 @@ button[type='submit']:disabled {
   box-shadow: none;
 }
 
+.edit-button {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.92);
+  color: #0f172a;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.35);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.edit-button:hover {
+  transform: translateY(-1px) scale(1.02);
+  background-color: rgba(249, 115, 22, 0.95);
+}
+
+.secondary-button {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f9fafb;
+  border: none;
+  padding: 0.8rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  transform: translateY(-1px) scale(1.01);
+}
+
