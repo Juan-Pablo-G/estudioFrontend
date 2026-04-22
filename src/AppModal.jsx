@@ -1,14 +1,13 @@
-export { default } from './AppModal.jsx'
-/*
 import { useEffect, useMemo, useState } from 'react'
+import './App.css'
 
 const API_BASE = 'https://estudiobackend.onrender.com'
 
-//const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+// const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
-function App() {
+function AppModal() {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '')
-  const [authMode, setAuthMode] = useState('login') // login | register
+  const [authMode, setAuthMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [posts, setPosts] = useState([])
@@ -42,11 +41,13 @@ function App() {
         setPosts([])
         return
       }
+
       const res = await fetch(api.postsUrl, { headers: api.headers })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.message || 'No se pudieron cargar las publicaciones')
       }
+
       const data = await res.json()
       setPosts(data)
     } catch (err) {
@@ -65,13 +66,14 @@ function App() {
       const res = await fetch(api.publicPostsUrl)
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.message || 'No se pudo cargar el feed público')
+        throw new Error(body.message || 'No se pudo cargar el feed publico')
       }
+
       const data = await res.json()
       setPublicPosts(data)
     } catch (err) {
       console.error(err)
-      setPublicError(err.message || 'No se pudo cargar el feed público')
+      setPublicError(err.message || 'No se pudo cargar el feed publico')
     }
   }
 
@@ -81,9 +83,7 @@ function App() {
   }, [api.publicPostsUrl])
 
   const handleDelete = async (id) => {
-    const confirmar = window.confirm(
-      '¿Seguro que quieres eliminar esta publicación?',
-    )
+    const confirmar = window.confirm('Seguro que quieres eliminar esta publicacion?')
     if (!confirmar) return
 
     try {
@@ -95,7 +95,7 @@ function App() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.message || 'Error al eliminar la publicación')
+        throw new Error(body.message || 'Error al eliminar la publicacion')
       }
 
       setPosts((prev) => prev.filter((post) => post._id !== id))
@@ -104,7 +104,7 @@ function App() {
       }
     } catch (err) {
       console.error(err)
-      setError(err.message || 'Error al eliminar la publicación')
+      setError(err.message || 'Error al eliminar la publicacion')
     } finally {
       setDeletingId(null)
     }
@@ -131,15 +131,15 @@ function App() {
     e.preventDefault()
     setError('')
 
-    if (!editingPost) {
-      return
-    }
+    if (!editingPost) return
+
     if (!editingPost.title) {
-      setError('El título es obligatorio')
+      setError('El titulo es obligatorio')
       return
     }
+
     if (!token) {
-      setError('Debes iniciar sesión para editar')
+      setError('Debes iniciar sesion para editar')
       return
     }
 
@@ -161,7 +161,7 @@ function App() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.message || 'Error al actualizar la publicación')
+        throw new Error(body.message || 'Error al actualizar la publicacion')
       }
 
       const updatedPost = await res.json()
@@ -170,7 +170,7 @@ function App() {
       handleCancelEdit()
     } catch (err) {
       console.error(err)
-      setError(err.message || 'Error al actualizar la publicación')
+      setError(err.message || 'Error al actualizar la publicacion')
     } finally {
       setIsSubmitting(false)
     }
@@ -181,11 +181,12 @@ function App() {
     setError('')
 
     if (!title || !imageFile) {
-      setError('El título y la imagen son obligatorios')
+      setError('El titulo y la imagen son obligatorios')
       return
     }
+
     if (!token) {
-      setError('Debes iniciar sesión para publicar')
+      setError('Debes iniciar sesion para publicar')
       return
     }
 
@@ -197,7 +198,6 @@ function App() {
 
     try {
       setIsSubmitting(true)
-
       const res = await fetch(api.postsUrl, {
         method: 'POST',
         body: formData,
@@ -206,7 +206,7 @@ function App() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.message || 'Error al crear la publicación')
+        throw new Error(body.message || 'Error al crear la publicacion')
       }
 
       await res.json()
@@ -219,7 +219,7 @@ function App() {
       e.target.reset()
     } catch (err) {
       console.error(err)
-      setError(err.message)
+      setError(err.message || 'Error al crear la publicacion')
     } finally {
       setIsSubmitting(false)
     }
@@ -228,6 +228,7 @@ function App() {
   const handleAuth = async (e) => {
     e.preventDefault()
     setError('')
+
     try {
       const endpoint = authMode === 'register' ? 'register' : 'login'
       const res = await fetch(`${api.authUrl}/${endpoint}`, {
@@ -237,14 +238,14 @@ function App() {
       })
 
       const body = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(body.message || 'Error de autenticación')
+      if (!res.ok) throw new Error(body.message || 'Error de autenticacion')
 
       localStorage.setItem('token', body.token)
       setToken(body.token)
       setPassword('')
     } catch (err) {
       console.error(err)
-      setError(err.message || 'Error de autenticación')
+      setError(err.message || 'Error de autenticacion')
     }
   }
 
@@ -263,11 +264,11 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>Juan Estudio</h1>
-        <p>Sube tus imágenes con título y descripción.</p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <p>Sube tus imagenes con titulo y descripcion.</p>
+        <div className="header-actions">
           <small><strong>API</strong>: {API_BASE}</small>
           {token ? (
-            <button type="button" onClick={handleLogout}>Cerrar sesión</button>
+            <button type="button" onClick={handleLogout}>Cerrar sesion</button>
           ) : null}
         </div>
       </header>
@@ -275,7 +276,7 @@ function App() {
       <main className="app-main">
         {!token ? (
           <section className="form-section">
-            <h2>{authMode === 'register' ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
+            <h2>{authMode === 'register' ? 'Crear cuenta' : 'Iniciar sesion'}</h2>
             <form onSubmit={handleAuth} className="post-form">
               <div className="form-group">
                 <label htmlFor="email">Email *</label>
@@ -289,7 +290,7 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="password">Contraseña *</label>
+                <label htmlFor="password">Contrasena *</label>
                 <input
                   id="password"
                   name="password"
@@ -300,94 +301,92 @@ function App() {
                 />
               </div>
               {error && <p className="error-text">{error}</p>}
-              <button type="submit">
-                {authMode === 'register' ? 'Registrarme' : 'Entrar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setError('')
-                  setAuthMode((m) => (m === 'login' ? 'register' : 'login'))
-                }}
-              >
-                {authMode === 'register'
-                  ? 'Ya tengo cuenta'
-                  : 'Quiero registrarme'}
-              </button>
+              <div className="form-actions">
+                <button type="submit">
+                  {authMode === 'register' ? 'Registrarme' : 'Entrar'}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => {
+                    setError('')
+                    setAuthMode((mode) => (mode === 'login' ? 'register' : 'login'))
+                  }}
+                >
+                  {authMode === 'register' ? 'Ya tengo cuenta' : 'Quiero registrarme'}
+                </button>
+              </div>
             </form>
           </section>
         ) : (
-        <section className="form-section">
-          <h2>{editingPostId ? 'Editar publicación' : 'Nueva publicación'}</h2>
-          <form onSubmit={handleSubmit} className="post-form">
-            <div className="form-group">
-              <label htmlFor="title">Título *</label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                placeholder="Ej: Atardecer en la playa"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
+          <section className="form-section">
+            <h2>Nueva publicacion</h2>
+            <form onSubmit={handleSubmit} className="post-form">
+              <div className="form-group">
+                <label htmlFor="title">Titulo *</label>
+                <input
+                  id="title"
+                  name="title"
+                  type="text"
+                  placeholder="Ej: Atardecer en la playa"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="description">Descripción</label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="Cuenta algo sobre esta imagen..."
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="description">Descripcion</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  placeholder="Cuenta algo sobre esta imagen..."
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="image">
-                Imagen *
-              </label>
-              <input
-                id="image"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files[0] || null)}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="image">Imagen *</label>
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0] || null)}
+                />
+              </div>
 
-            <div className="form-group checkbox-row">
-              <input
-                id="isPublic"
-                name="isPublic"
-                type="checkbox"
-                checked={publishPublic}
-                onChange={(e) => setPublishPublic(e.target.checked)}
-              />
-              <label htmlFor="isPublic" style={{ margin: 0 }}>
-                Publicar para el público
-              </label>
-            </div>
+              <div className="form-group checkbox-row">
+                <input
+                  id="isPublic"
+                  name="isPublic"
+                  type="checkbox"
+                  checked={publishPublic}
+                  onChange={(e) => setPublishPublic(e.target.checked)}
+                />
+                <label htmlFor="isPublic" style={{ margin: 0 }}>
+                  Publicar para el publico
+                </label>
+              </div>
 
-            {error && <p className="error-text">{error}</p>}
+              {error && <p className="error-text">{error}</p>}
 
-            <div className="form-actions">
-              <button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Subiendo...' : 'Publicar'}
-              </button>
-                  Cancelar edición
-            </div>
-          </form>
-        </section>
+              <div className="form-actions">
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Subiendo...' : 'Publicar'}
+                </button>
+              </div>
+            </form>
+          </section>
         )}
 
         <section className="gallery-section">
-          <h2>Feed público</h2>
+          <h2>Feed publico</h2>
           {publicError ? (
             <p className="error-text">{publicError}</p>
           ) : publicPosts.length === 0 ? (
-            <p className="empty-text">Todavía no hay publicaciones públicas.</p>
+            <p className="empty-text">Todavia no hay publicaciones publicas.</p>
           ) : (
             <div className="masonry">
               {publicPosts.map((post) => (
@@ -404,7 +403,7 @@ function App() {
                     <div className="card-body">
                       <h3>{post.title}</h3>
                       {post.description && <p>{post.description}</p>}
-                      <small style={{ display: 'block', opacity: 0.8 }}>Público</small>
+                      <small style={{ display: 'block', opacity: 0.8 }}>Publico</small>
                     </div>
                   </div>
                 </article>
@@ -418,8 +417,8 @@ function App() {
           {posts.length === 0 ? (
             <p className="empty-text">
               {token
-                ? 'No tienes publicaciones todavía.'
-                : 'Inicia sesión para ver tus publicaciones.'}
+                ? 'No tienes publicaciones todavia.'
+                : 'Inicia sesion para ver tus publicaciones.'}
             </p>
           ) : (
             <div className="masonry">
@@ -433,7 +432,7 @@ function App() {
                       type="button"
                       className="edit-button"
                       onClick={() => handleStartEditing(post)}
-                      aria-label="Editar publicación"
+                      aria-label="Editar publicacion"
                     >
                       ✎
                     </button>
@@ -442,7 +441,7 @@ function App() {
                       className="delete-button"
                       onClick={() => handleDelete(post._id)}
                       disabled={deletingId === post._id}
-                      aria-label="Eliminar publicación"
+                      aria-label="Eliminar publicacion"
                     >
                       {deletingId === post._id ? '...' : '×'}
                     </button>
@@ -455,7 +454,7 @@ function App() {
                       <h3>{post.title}</h3>
                       {post.description && <p>{post.description}</p>}
                       <small style={{ display: 'block', opacity: 0.8 }}>
-                        {post.isPublic ? 'Público' : 'Privado'}
+                        {post.isPublic ? 'Publico' : 'Privado'}
                       </small>
                     </div>
                   </div>
@@ -465,9 +464,120 @@ function App() {
           )}
         </section>
       </main>
+
+      {editingPost ? (
+        <div className="modal-backdrop" role="presentation" onClick={handleCancelEdit}>
+          <section
+            className="edit-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-post-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="edit-modal-header">
+              <div>
+                <p className="modal-eyebrow">Editar publicacion</p>
+                <h2 id="edit-post-title">Actualiza tu foto y sus detalles</h2>
+              </div>
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={handleCancelEdit}
+                aria-label="Cerrar editor"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="post-form edit-modal-form">
+              <div className="edit-modal-preview">
+                <img
+                  src={getImageSrc(editingPost.imageUrl)}
+                  alt={editingPost.title}
+                  loading="lazy"
+                />
+                <p>
+                  {editingPost.imageFile
+                    ? `Nueva imagen seleccionada: ${editingPost.imageFile.name}`
+                    : 'Puedes conservar la imagen actual o reemplazarla por otra.'}
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-title">Titulo *</label>
+                <input
+                  id="edit-title"
+                  name="edit-title"
+                  type="text"
+                  placeholder="Ej: Atardecer en la playa"
+                  value={editingPost.title}
+                  onChange={(e) => setEditingPost((prev) => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-description">Descripcion</label>
+                <textarea
+                  id="edit-description"
+                  name="edit-description"
+                  placeholder="Cuenta algo sobre esta imagen..."
+                  rows={3}
+                  value={editingPost.description}
+                  onChange={(e) =>
+                    setEditingPost((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="edit-image">Reemplazar imagen (opcional)</label>
+                <input
+                  id="edit-image"
+                  name="edit-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setEditingPost((prev) => ({ ...prev, imageFile: e.target.files[0] || null }))
+                  }
+                />
+              </div>
+
+              <div className="form-group checkbox-row">
+                <input
+                  id="edit-isPublic"
+                  name="edit-isPublic"
+                  type="checkbox"
+                  checked={editingPost.isPublic}
+                  onChange={(e) =>
+                    setEditingPost((prev) => ({ ...prev, isPublic: e.target.checked }))
+                  }
+                />
+                <label htmlFor="edit-isPublic" style={{ margin: 0 }}>
+                  Mostrar esta publicacion al publico
+                </label>
+              </div>
+
+              {error && <p className="error-text">{error}</p>}
+
+              <div className="form-actions">
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Actualizando...' : 'Guardar cambios'}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={handleCancelEdit}
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
     </div>
   )
 }
 
-export default App
-*/
+export default AppModal
