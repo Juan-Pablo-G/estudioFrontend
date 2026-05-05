@@ -21,6 +21,7 @@ function AppModal() {
   const [publicError, setPublicError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
   const [editingPost, setEditingPost] = useState(null)
+  const [likingPostId, setLikingPostId] = useState(null)
 
   const api = useMemo(() => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
@@ -63,7 +64,9 @@ function AppModal() {
   const fetchPublicPosts = async () => {
     try {
       setPublicError('')
-      const res = await fetch(api.publicPostsUrl)
+      const res = await fetch(api.publicPostsUrl, {
+        headers: api.headers,
+      })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.message || 'No se pudo cargar el feed publico')
@@ -77,10 +80,49 @@ function AppModal() {
     }
   }
 
+  const handleToggleLike = async (postId) => {
+    if (!token) {
+      setError('Debes iniciar sesion para dar like')
+      return
+    }
+
+    try {
+      setLikingPostId(postId)
+      setError('')
+
+      const res = await fetch(`${api.postsUrl}/${postId}/like`, {
+        method: 'POST',
+        headers: api.headers,
+      })
+
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(body.message || 'No se pudo actualizar el like')
+      }
+
+      setPublicPosts((prev) =>
+        prev.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likesCount: body.likesCount,
+                likedByMe: body.likedByMe,
+              }
+            : post,
+        ),
+      )
+    } catch (err) {
+      console.error(err)
+      setError(err.message || 'No se pudo actualizar el like')
+    } finally {
+      setLikingPostId(null)
+    }
+  }
+
   useEffect(() => {
     fetchPublicPosts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api.publicPostsUrl])
+  }, [token, api.publicPostsUrl])
 
   const handleDelete = async (id) => {
     const confirmar = window.confirm('Seguro que quieres eliminar esta publicacion?')
@@ -403,7 +445,22 @@ function AppModal() {
                     <div className="card-body">
                       <h3>{post.title}</h3>
                       {post.description && <p>{post.description}</p>}
-                      <small style={{ display: 'block', opacity: 0.8 }}>Publico</small>
+                      <div className="card-footer">
+                        <small style={{ opacity: 0.8 }}>Publico</small>
+                        <button
+                          type="button"
+                          className={`like-button ${post.likedByMe ? 'liked' : ''}`}
+                          onClick={() => handleToggleLike(post._id)}
+                          disabled={likingPostId === post._id}
+                          aria-pressed={post.likedByMe}
+                        >
+                          {likingPostId === post._id
+                            ? '...'
+                            : post.likedByMe
+                              ? `♥ ${post.likesCount || 0}`
+                              : `♡ ${post.likesCount || 0}`}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </article>
